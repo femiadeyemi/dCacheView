@@ -1,0 +1,178 @@
+<link rel="import" href="../../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../../../bower_components/iron-selector/iron-selector.html">
+
+<link rel="import" href="../../../../bower_components/paper-card/paper-card.html">
+
+
+<link rel="import" href="../../list-view/list-row.html">
+<link rel="import" href="../../access-denied-or-empty-directory/access-denied-or-empty-directory.html">
+
+
+<dom-module id="view-file">
+	<template>
+		<style>
+			:host {
+			@apply(--layout-fit);
+			@apply(--layout-vertical);
+				margin: 0px 30px;
+			}
+			.item{
+				text-decoration: none !important;
+				background-color: white;
+			@apply(--layout-flex);
+				cursor:pointer;
+			}
+			.item:focus, .item.selected:focus {
+				outline: -webkit-focus-ring-color auto 5px !important;
+			}
+			.item:hover, .item.selected:hover {
+				background-color: #ccc;
+			}
+			.item.selected {
+				background-color: #2196F3;
+				color: #fafafa;
+				outline: 0;
+			}
+		</style>
+		<iron-ajax id="ajax"
+				auto
+				url="http://localhost:2880/drestapi/LIST/"
+				method="POST"
+				content-type="application/json"
+				headers$='[[_computeHeaders(isSomebody)]]'
+				body='{{requestBody}}'
+				handle-as="json" on-response="handleResponse"
+				last-response="{{data}}">
+		</iron-ajax>
+		<paper-material id="content" elevation="1">
+			<template is="dom-if" if="{{hasFiles}}" restamp>
+				
+					<iron-list id="abc" items="[[data.List]]" style="min-height:50px;" selected-items="{{selectedItems}}" selection-enabled multi-selection="{{multiSlection}}">
+						<template>
+						
+							<div>
+								<list-row class$="[[_computedClass(selected)]]" tabindex$="[[tabIndex]]"
+										  name="{{item.fileName}}"
+										  file-type="{{item.fileType}}"
+										  ctime="{{item.creationTime}}"
+										  mtime="{{item.mtime}}"
+										  size="{{item.size}}"
+										  path="{{item.path}}">
+								</list-row>
+							</div>
+						
+						</template>
+					</iron-list>
+
+			</template>
+			<template  is="dom-if" if="{{isEmptyDenied}}" restamp>
+				<access-denied-or-empty-directory message="{{msg}}"></access-denied-or-empty-directory>
+			</template>
+		</paper-material>
+	</template>
+
+	<script>
+		Polymer({
+			is: "view-file",
+
+			properties: {
+				path: {
+					type: String,
+					notify: true,
+				},
+
+				selectedItems : {
+					type: Object,
+				},
+
+				multiSlection: {
+					type: Boolean,
+					value: false,
+					notify: true
+				},
+
+				hasFiles: {
+					type: Boolean,
+					notify: true
+				},
+
+				isEmptyDenied: {
+					type: Boolean,
+					notify: true
+				},
+
+				isSomebody: {
+					type: Boolean,
+					value: true,
+					notify: true
+				},
+
+				requestBody: {
+					type: Object,
+					value: {},
+					notify: true,
+					computed: '_computeBody(path)'
+				},
+				msg:{
+					type: String,
+					notify: true
+				}
+
+			},
+
+			_computeBody: function(path) {
+				if (path == null || path == ""){
+					return {"directoryPath": "/"};
+				} else {
+					path = decodeURIComponent(path);
+					path = path.replace(/=/g, "/");
+					
+					return '{"directoryPath": "' + path + '"}';
+				}
+			},
+
+			_computedClass: function(isSelected) {
+				var classes = 'item';
+				if (isSelected) {
+					classes += ' selected';
+				}
+				return classes;
+				this.updateStyles();
+			},
+
+			_computeHeaders: function(isSomebody) {
+				//For now use this for test purpose
+				if(isSomebody == true){
+					return '{"Accept":"application/json", "Authorization":"Basic YWRtaW46ZGlja2VyZWxjaA==' + '"}';
+				}
+			},
+
+			handleResponse: function(e, request) {
+				x = request.xhr.response.List;
+				
+				if (x.length == 0 || (x.length == 1 && (x[0].messages != undefined || x[0].messages != null))){
+					this.isEmptyDenied = true;
+					this.hasFiles = false;
+
+					if (x.length == 0){
+						this.msg = "Empty Directory";
+					} else if(x[0].messages != undefined || x[0].messages != null){
+						this.msg = (x[0].messages).toString();
+					}
+				} else {
+					this.isEmptyDenied = false;
+					this.hasFiles = true;
+				}
+
+				Polymer.dom.flush();
+				this.updateStyles();
+
+				e.stopPropagation();
+			},
+		});
+	</script>
+</dom-module>

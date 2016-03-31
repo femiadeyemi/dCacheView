@@ -1,0 +1,100 @@
+<!--
+A comment describing this element.
+
+Example:
+
+    <my-elem></my-elem>
+
+Example:
+
+    <my-elem>
+      <h2>Hello my-elem</h2>
+    </my-elem>
+
+@demo demo/index.html
+-->
+
+<dom-module id="rename-file-dialog-box">
+	<template>
+		<style>
+            :host{
+                display: block;
+                @apply(--layout-vertical);
+                min-height: 170px;
+                min-width: 350px;
+            }
+            .flex {
+                @apply(--layout-flex);
+                align-content: center;
+            }
+            .rename{
+                background-color: #3284e1;
+                color: white !important;
+            }
+            paper-input [prefix]{
+                margin-right: 13px !important;
+            }
+        </style>
+        <div>
+            <h2>Rename a File</h2>
+        </div>
+        <br>
+        <div class="flex">
+            <span>This new folder will be created inside the <b style="color: red;">{{currentDirName}}</b> directory</span>
+            <paper-input label="folder name" value="{{newName}}" auto-validate pattern="[^/]+" 
+                error-message="The file name can not be empty or contain forward slash!" required focused>
+                <iron-icon icon="folder" prefix></iron-icon>
+            </paper-input>
+        </div>
+        <br>
+        <div class="buttons">
+            <paper-button dialog-dismiss>Cancel</paper-button>
+            <paper-button class="rename" on-tap="_rename" raised>Rename</paper-button>
+        </div>
+		
+	</template>
+	<script>
+		RenameFileDialogBox = Polymer({
+			is: 'rename-file-dialog-box',
+
+			properties: {
+
+                newName: {
+                    type: String,
+                    value:"Untitled folder",
+                    notify: true
+                },
+
+                directoryPath: {
+                    type: String,
+                    notify: true
+                },
+
+                currentName: {
+                    type: String,
+                    notify: true
+                },
+            },
+
+            //Elememt Constructor
+            factoryImpl: function(currentName, directoryPath) {
+                this.currentName = currentName;
+                this.directoryPath = directoryPath;
+            },
+
+            //EventHandlers Functions
+            _rename: function(){
+                if (this.newName == "" || this.newName == null) {
+                    app.$.toast.text = 'Folder name can\'t be empty';
+                    app.$.toast.show();
+                } else {
+                    //dismise the dialogbox
+                    app.$.centralDialogBox.toggle();
+                }
+
+                new RenameFile(this.currentName, this.currentName, this.newName);
+                
+            },
+		});
+	</script>
+</dom-module>

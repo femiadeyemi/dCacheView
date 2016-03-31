@@ -1,0 +1,73 @@
+<link rel="import" href="../../../../bower_components/polymer/polymer.html">
+
+<dom-module id="rename-file">
+    <template>
+        <iron-ajax id="ajax"
+                   auto
+                   url="http://localhost:2880/drestapi/RENAME/"
+                   method="POST"
+                   content-type="application/json"
+                   headers$='[[_computeHeaders(isSomebody)]]'
+                   body='{"directoryPath": "{{path}}", "currentName": "{{fileName}}", "newName": "{{newName}}"}'
+                   handle-as="json" on-response="handleResponse" on-error="handleError">
+        </iron-ajax>
+    </template>
+    <script>
+        RenameFile = Polymer({
+            is: 'rename-file',
+
+            properties: {
+                fileName: {
+                    type: String,
+                    notify: true
+                },
+                newName: {
+                    type: String,
+                    notify: true
+                },
+                path: {
+                    type: String,
+                    notify: true
+                },
+
+                isSomebody: {
+                    type: Boolean,
+                    value: true,
+                    notify: true
+                },
+            },
+
+            //Elememt Constructor
+            factoryImpl: function(fileName, newName, path) {
+                this.fileName = fileName;
+                this.newName = newName;
+                this.path = path;
+            },
+
+            //EventHandlers Functions
+
+            _computeHeaders: function(isSomebody){
+                if(isSomebody == true){
+                    return '{"Accept":"application/json", "Authorization":"Basic YWRtaW46ZGlja2VyZWxjaA==' + '"}';
+                } else {
+                    return '{"Accept":"application/json"}';
+                }
+            },
+
+            handleResponse: function(e) {
+                app.$.toast.text = e.target.lastRequest.xhr.response.messages;
+                app.$.toast.show();
+                setTimeout(function(){location.reload();} , 1000);   
+                //console.log(e.target.lastRequest.xhr.response.messages);
+            },
+
+            handleError: function(e){
+                app.$.toast.text = e.detail.request.xhr.response.messages;
+                app.$.toast.show();
+                //console.log(e.detail.request.xhr.response.messages);
+            },
+        });
+    </script>
+</dom-module>
+<!--Work In Progress: I Have not done any work here, all I did was to copy <create-folder> element -->
+

@@ -1,0 +1,21 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<dom-module id="access-denied-or-empty-directory">
+	<template>
+		<style>
+		</style>
+		<div>{{message}}</div>
+	</template>
+	<script>
+		Polymer({
+			is: 'access-denied-or-empty-directory',
+
+			properties :{
+				message: {
+					type: String,
+					notify:true
+				}
+			}
+		});
+	</script>
+</dom-module>
