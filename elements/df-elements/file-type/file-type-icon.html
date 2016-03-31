@@ -29,10 +29,12 @@
 			_loadIcon: function(){
 				if (this.filetype == "DIR") {
 					this.$.foo.icon = "icons:folder";
+					this.$.foo.classList.remove("regular");
 					this.$.foo.classList.add("dir");
 				} else {
 					this.$.foo.icon = "editor:insert-drive-file";
 					this.$.foo.classList.add("regular");
+					this.$.foo.classList.remove("dir");
 				}
 				this.updateStyles();
 			}

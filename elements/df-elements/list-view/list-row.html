@@ -3,60 +3,90 @@
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../../bower_components/iron-icons/notification-icons.html">
 
 <link rel="import" href="../file-type/file-type-icon.html">
-<link rel="import" href="../context-menu/hover-context-menu.html">
 
 <dom-module id="list-row">
+	<style>
+		:host {
+			@apply(--layout-block);
+			font-size: 0.7em;
+		}
+		.row {
+			@apply(--layout-horizontal);
+			@apply(--layout-center);
+			height: 40px;
+			border-bottom: 1px solid #e5e5e5;
+			text-decoration: none !important;
+		}
+		.name{
+			@apply(--layout-flex-3);
+		}
+		.ctime, .mtime {
+			@apply(--layout-flex);
+		}
+		.mtime {
+			text-align: center;
+		}
+		.size {
+			@apply(--layout-flex);
+			text-align: right;
+		}
+		.size > span {
+			padding-right: 10px;
+		}
+		.fit {
+			@apply(--layout-fit);
+		}
+		.online {
+			
+			font-size: 0.3em;
+			color: #2196F3;
+		}
+
+		.nearline {
+			border: 1px solid #969696;
+			border-radius:3px; 
+			margin: 0px !important;
+			font-size: 0.1em !important;
+			color: #f44336;
+			-ms-transform: rotate(180deg); /* IE 9 */
+    		-webkit-transform: rotate(180deg); /* Chrome, Safari, Opera */
+    		transform: rotate(180deg);
+		  	animation: blink-animation 1s steps(5, start) 3;
+		  	-webkit-animation: blink-animation 1s steps(5, start) 3;
+		  	width: 24px;
+    		height: 18px;
+		}
+		@keyframes blink-animation {
+		  	to {
+		    	visibility: hidden;
+		  	}
+		}
+		@-webkit-keyframes blink-animation {
+		  	to {
+		    visibility: hidden;
+		  	}
+		}
+	</style>
 	<template>
-		<style>
-			:host {
-				@apply(--layout-block);
-				/*@apply(--layout-relative);*/
-				/*@apply(--layout-fit);*/ /*remember that the parent must have a relative position*/
-				/*background-color: #fff; *//*!important;*/
-				/*color: #333;*/
-				font-size: 0.7em;
-
-			}
-			.row {
-				/*@apply(--layout-fit);*/
-				@apply(--layout-horizontal);
-				height: 40px;
-				border-bottom: 1px solid #e5e5e5; /*I'm considering putting this inside where this element is been sused*/
-				@apply(--layout-center);
-				text-decoration: none !important;
-			}
-			.name{
-				@apply(--layout-flex-3);
-				padding-left: 10px;
-			}
-
-			.ctime, .mtime {
-				@apply(--layout-flex);
-			}
-			.size {
-				@apply(--layout-flex);
-				text-align: right;
-
-			}
-			.size > span{
-				padding-right: 10px;
-			}
-			.fit{
-				@apply(--layout-fit);
-			}
-		</style>
-
 		<div id="row" class="row">
+			<file-type-icon filetype="{{fileType}}" style="padding-left: 10px;"></file-type-icon>
 			<div class="cell name">
-				<file-type-icon filetype="{{fileType}}"></file-type-icon>
-				<!-- <paper-input id="filename" style="padding-left:5px;" label="{{name}}" disabled></paper-input> -->
 				<label id="filename" style="padding-left:5px;">{{name}}</label>
 			</div>
-			<div class="cell ctime">{{ctime}}</div>
-			<div class="cell mtime">{{mtime}}</div>
-			<div class="cell size">
+			<div class="cell ctime">{{computedCTime}}</div>
+			<div class="cell mtime">
+				<template is="dom-if" if="{{isNearline}}" restamp>
+					<iron-icon icon="communication:voicemail" class="nearline"></iron-icon>
+				</template>
+				<template is="dom-if" if="{{isOnline}}" restamp>
+					<iron-icon icon="av:album" class="online"></iron-icon>
+				</template>
+			</div>
+			<div class="cell size" id="hovering">
 				<span>{{computedSize}}</span>
 			</div>
 			<div hidden>{{path}}</div>
@@ -82,6 +112,10 @@
 					type: String,
 					notify: true,
 				},
+				computedCTime: {
+					type: String,
+					computed:'_computedCTime(ctime)',
+				},
 
 				mtime: {
 					type: String,
@@ -103,126 +137,78 @@
 					notify: true,
 				},
 
+				loc: {
+					type: String,
+					notify: true,
+				},
+
+				locality: {
+					type: String,
+					notify: true,
+					computed: '_computeLocality(loc)'
+				},
+				isNearline: {
+					type: Boolean,
+					notify: true,
+				},
+				isOnline: {
+					type: Boolean,
+					notify: true,
+				}
 			},
 
-			//EventListeners
+			//	EventListeners
 			//========================
 			listeners: {
-				'row.mouseover': '_mouseOver',
-				'row.mouseleave': '_mouseLeave',
-				'row.dblclick': '_openFileLoc',
-				'filename.dblclick': '_rename'
+				'row.dblclick': '_openFileLoc'
 			},
 
 
-			//Functions
+			//	"Computed" Functions
 			//========================
+			_computeLocality: function(loc)
+			{
+				if(loc == "NEARLINE"){
+					this.isNearline = true;
+					this.isOnline = false;
+				} else if ( loc == "ONLINE") {
+					this.isNearline = false;
+					this.isOnline = true;
+				} else {
+					this.isNearline = false;
+					this.isOnline = false;
+				}
+			},
+
+			_computedCTime: function(ctime)
+			{
+				var x = new Date(ctime);
+				return x.toLocaleString();
+			},
+
 			_computeSize: function(fileType, size) 
 			{
 				return (fileType == "DIR") ? "--" : size;
 			},
 
-			//EventHandlers
-			//========================
+			//	EventHandler (Functions)
+			//============================
 			_openFileLoc: function() 
 			{
 				var x = this.fileType;
-				var path = this.path;
 
 				if (x == "DIR") {
-					path = path.replace(/\//g, "=");
-					//var y = '/home/'+encodeURIComponent(path);
-					var y = '/home/'+path;
+					var path = this.path;
 
-					//console.log(encodeURIComponent(y));
-					//page(encodeURIComponent(y));
+					path = path.replace(/\//g, "=");
+					var y = '/home/'+ path;
 					page(y);
 				} else {
+					var path = window.CONFIG.webDavHostName + ":" + window.CONFIG.webDavPort + this.path;
+					
 					window.open(path);
 				}
 
-			},
-
-			_rename: function(e) 
-			{
-				e.stopPropagation();
-				
-				var path = decodeURIComponent(app.params);
-				var currentDirName;
-				var x = this.selected;
-
-				app.$.centralDialogBox.innerHTML = "";
-				if (x == "home"){
-					path = ""
-					currentDirName ="HOME"
-				} else if(x == "pathfinder"){
-					path = path.replace(/=/g, "/");
-					var n = path.lastIndexOf("/");
-					currentDirName = path.slice(n+1);
-					//console.log(path);
-				} else{
-					console.log("Error");
-					return;
-				}
-
-				//console.log(path);
-				var el2 = new RenameFileDialogBox(currentDirName, path);
-				app.$.centralDialogBox.appendChild(el2);
-				Polymer.dom.flush();
-				this.updateStyles();
-
-				app.$.centralDialogBox.toggle();
-
-				e.stopPropagation();
-			},
-
-			_mouseOver: function(e) 
-			{
-				e.stopPropagation();
-
-				var el1 = new HoverContextMenu(this.name, this.fileType, this.path);
-
-				// var el1 = document.createElement('hover-context-menu');
-
-				var checker = '<span class="style-scope list-row">'+this.computedSize+'</span>';
-
-				var hover = Polymer.dom(this.$.row).childNodes[7].innerHTML;
-
-				if (hover.toString().trim() == checker.toString()) {
-					var removeSize = Polymer.dom(this.$.row).childNodes[7].lastElementChild;
-					Polymer.dom(this.$.row).childNodes[7].removeChild(removeSize);
-
-					Polymer.dom(this.$.row).childNodes[7].appendChild(el1);
-					Polymer.dom.flush();
-					this.updateStyles();
-				}
-				
-				e.stopPropagation();
-			},
-
-			_mouseLeave: function(e) 
-			{
-				e.stopPropagation();
-
-				var checker = '<span class="style-scope list-row">'+this.computedSize+'</span>';
-
-				var hover = Polymer.dom(this.$.row).childNodes[7].innerHTML;
-
-				if (hover.toString().trim() != checker.toString()) {
-					var removeHover = Polymer.dom(this.$.row).childNodes[7].lastElementChild;
-					Polymer.dom(this.$.row).childNodes[7].removeChild(removeHover);
-
-					var span = document.createElement('span');
-					var t = document.createTextNode(this.computedSize);
-					span.appendChild(t);
-					span.classList.add("style-scope", "list-row");
-
-					Polymer.dom(this.$.row).childNodes[7].appendChild(span);
-					Polymer.dom.flush();
-					this.updateStyles();
-				}
-				
-				e.stopPropagation();
 			},
 		});
 	</script>

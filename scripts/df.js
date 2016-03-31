@@ -3,6 +3,7 @@
 
   var app = document.querySelector('#app');
 
+
   // Sets app default base URL
   app.baseUrl = '/';
   if (window.location.port === '') {  // if production
@@ -22,12 +23,11 @@
     // imports are loaded and elements have been registered
   });
 
+  //Prevent text selection after double click
+  //app.addEventListener('mousedown', function(e){ e.preventDefault(); }, false);
+
   app.menuAction = function(){
     app.$.dfDrawerPanel.togglePanel();
   };
-  
-  // app.closeFileMetadataPanel = function(){
-  //   app.$.metadata.closeDrawer();
-  // } //I comment this out because I've factor this section out and it can now be located inside the file-metadata element
 
 })(document);
