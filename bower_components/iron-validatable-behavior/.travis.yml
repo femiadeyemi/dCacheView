@@ -6,8 +6,8 @@ before_script:
   - polylint
 env:
   global:
-    - secure: QxZD8yzz7s3F6b7h87ztWYiEbD2TrQp1Z1mib5u1wL7EAwsrQVkFhIEo4cJPAsTGS98qgeZAITg0ifwp/jOKVC2QKoPnC1qjm4L0AjlhXBTRbqyS5G8jvfJ8M4DgkQXADh4e+lw9ba3h2AxceJELKTYaQVq/cpTrpPg0/RH7H4o=
-    - secure: i76J23Bpwj6qJ4ybCCsQpGCTT+5s1PA+x0Avjbl1JTS4OsJLDFfvVl0YIWZ5xMIKJtdPC/mGDoZ2LNrh9hz82DBqDnzBlSnNjFbjnU1Aqy5CUmRWzyAF5NOjJGotISZcDYDGZd6gjsOfN0r+rICyRUiOadeyPf0Nm+6HSVQMjfM=
+    - secure: AsXK1s4viLG4eumYMxE0bJasVbWrpQ7JaUboMoK4Nzhmunx01udikRRAJifl3nkcc4m2GpzCb4Kmtyh5hxyLA05uE416VzmfDq3dGJKsNAQXbSescSVik63llq4HXAdOvek2eSo5wOVGNHslscIed5K2bJajXfPMIODJyBxo8aE=
+    - secure: V/H/0+/R8owujbwe3IDbND8v5zs4pWTe0hRCLefjgR9ci2lmNNP54Zb97nOZnLQqynafDSyrngL3+RP5F0fk1dC++cpuxQNKoYPwDFPZ41LAxp5dgtyxkb+J4eWtq0UilWF5thVt4oB1OWwPGtxMmSl+imXXKtq4a4Ov++t2Apo=
 node_js: stable
 addons:
   firefox: latest
